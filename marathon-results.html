@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Сетевой НейроВзлет — Итоги марафона</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--neon:#b700ff;--neon2:#ff00ff;--v:#7c3aed;--pk:#e879f9;--bg:#07000f;--card:rgba(16,0,32,.82);--text:#f0e6ff;--muted:rgba(210,170,255,.75)}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;overflow-x:hidden;line-height:1.65}
+
+/* BG */
+.dot-grid{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:radial-gradient(circle,rgba(183,0,255,.11) 1px,transparent 0);background-size:36px 36px}
+.orb{position:fixed;border-radius:50%;filter:blur(100px);pointer-events:none;z-index:0;animation:orb 12s ease-in-out infinite}
+.o1{width:480px;height:480px;background:radial-gradient(#8800cc77,transparent 70%);top:-150px;left:-150px}
+.o2{width:360px;height:360px;background:radial-gradient(#6600aa55,transparent 70%);bottom:-100px;right:-100px;animation-delay:-5s;animation-direction:reverse}
+.o3{width:260px;height:260px;background:radial-gradient(#cc00ff44,transparent 70%);top:45%;right:4%;animation-delay:-9s}
+@keyframes orb{0%,100%{transform:translate(0,0) scale(1)}40%{transform:translate(25px,-25px) scale(1.08)}70%{transform:translate(-15px,15px) scale(.94)}}
+#pts{position:fixed;inset:0;pointer-events:none;z-index:0}
+.pt{position:absolute;border-radius:50%;animation:rise linear infinite;opacity:0}
+@keyframes rise{0%{transform:translateY(100vh);opacity:0}8%{opacity:1}90%{opacity:.6}100%{transform:translateY(-80px);opacity:0}}
+
+/* LAYOUT */
+.wrap{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:0 20px}
+
+/* HERO */
+.hero{padding:100px 20px 60px;text-align:center;position:relative;z-index:1}
+.eyebrow{display:inline-flex;align-items:center;gap:7px;padding:5px 16px;border-radius:30px;border:1px solid rgba(183,0,255,.4);background:rgba(183,0,255,.1);font-size:11px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:#d48bff;margin-bottom:24px}
+.eyebrow svg{width:13px;height:13px;fill:#b700ff}
+.hero-title{font-size:clamp(28px,6vw,58px);font-weight:900;line-height:1.1;letter-spacing:-.5px;margin-bottom:16px}
+.hero-title .g{background:linear-gradient(120deg,#ff66ff,#b700ff,#a855f7,#ff66ff);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:gs 5s linear infinite;filter:drop-shadow(0 0 20px rgba(183,0,255,.5))}
+@keyframes gs{0%{background-position:0%}100%{background-position:200%}}
+.hero-sub{font-size:clamp(15px,2vw,18px);color:var(--muted);max-width:600px;margin:0 auto 40px}
+.stats-row{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;margin-bottom:0}
+.stat{background:rgba(183,0,255,.1);border:1px solid rgba(183,0,255,.3);border-radius:16px;padding:18px 28px;text-align:center;min-width:140px}
+.stat-n{font-size:32px;font-weight:900;background:linear-gradient(135deg,#ff66ff,#b700ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-l{font-size:12px;color:var(--muted);margin-top:4px;letter-spacing:.3px}
+
+/* PROGRAM BLOCK */
+.prog-block{margin:60px auto;max-width:900px;padding:0 20px;position:relative;z-index:1}
+.prog-inner{background:var(--card);border:1px solid rgba(183,0,255,.2);border-radius:24px;padding:36px 40px;backdrop-filter:blur(18px)}
+.prog-title{font-size:20px;font-weight:800;margin-bottom:24px;display:flex;align-items:center;gap:10px}
+.prog-title svg{width:22px;height:22px;fill:#b700ff;filter:drop-shadow(0 0 6px #b700ff)}
+.prog-cols{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.prog-col h4{font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#b700ff;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.prog-col h4 svg{width:14px;height:14px;fill:#b700ff}
+.prog-list{list-style:none;display:flex;flex-direction:column;gap:7px}
+.prog-list li{font-size:13.5px;color:var(--muted);display:flex;align-items:flex-start;gap:8px;line-height:1.45}
+.prog-list li::before{content:'›';color:#b700ff;font-weight:700;font-size:16px;flex-shrink:0;margin-top:-1px}
+.prog-divider{height:1px;background:rgba(183,0,255,.15);margin:20px 0}
+.prog-outcome{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
+.prog-tag{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid rgba(183,0,255,.35);background:rgba(183,0,255,.08);color:#d48bff}
+
+/* ACCORDION SECTION */
+.acc-section{max-width:900px;margin:0 auto 80px;padding:0 20px;position:relative;z-index:1}
+.sec-label{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(183,0,255,.5);margin-bottom:10px;text-align:center}
+.sec-title{font-size:clamp(22px,4vw,36px);font-weight:900;text-align:center;margin-bottom:8px;line-height:1.2}
+.sec-title em{font-style:normal;background:linear-gradient(120deg,#ff66ff,#b700ff,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sec-sub{font-size:14px;color:var(--muted);text-align:center;margin-bottom:36px}
+.acc-list{display:flex;flex-direction:column;gap:12px}
+
+/* SINGLE ACCORDION ITEM */
+.acc{background:var(--card);border:1px solid rgba(183,0,255,.2);border-radius:18px;overflow:hidden;backdrop-filter:blur(16px);transition:border-color .3s ease,box-shadow .3s ease}
+.acc.open{border-color:rgba(183,0,255,.45);box-shadow:0 8px 40px rgba(183,0,255,.15)}
+.acc-head{display:flex;align-items:center;gap:14px;padding:20px 24px;cursor:pointer;user-select:none;transition:background .2s ease}
+.acc-head:hover{background:rgba(183,0,255,.06)}
+.acc-icon{width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative}
+.acc-icon::before{content:'';position:absolute;inset:-1px;border-radius:14px;background:linear-gradient(135deg,rgba(183,0,255,.5),rgba(124,58,237,.3));z-index:0}
+.acc-icon::after{content:'';position:absolute;inset:1px;border-radius:12px;background:rgba(16,0,32,.95);z-index:1}
+.acc-icon svg{width:20px;height:20px;position:relative;z-index:2;filter:drop-shadow(0 0 4px rgba(183,0,255,.7))}
+.acc-head-text{flex:1}
+.acc-head-text h3{font-size:16px;font-weight:700;margin-bottom:2px}
+.acc-head-text p{font-size:12px;color:var(--muted)}
+.acc-arrow{width:20px;height:20px;flex-shrink:0;stroke:rgba(183,0,255,.6);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform .35s cubic-bezier(.22,1,.36,1)}
+.acc.open .acc-arrow{transform:rotate(180deg)}
+.acc-body{max-height:0;overflow:hidden;transition:max-height .45s cubic-bezier(.22,1,.36,1)}
+.acc.open .acc-body{max-height:2000px}
+.acc-content{padding:4px 24px 24px 24px}
+.acc-divider{height:1px;background:rgba(183,0,255,.12);margin-bottom:20px}
+
+/* CONTENT STYLES */
+.item-list{list-style:none;display:flex;flex-direction:column;gap:10px}
+.item-list li{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-radius:12px;background:rgba(183,0,255,.05);border:1px solid rgba(183,0,255,.1);font-size:14px;color:rgba(220,180,255,.9);line-height:1.55;transition:background .2s ease}
+.item-list li:hover{background:rgba(183,0,255,.1)}
+.item-list li .bul{width:20px;height:20px;border-radius:50%;background:rgba(183,0,255,.2);border:1px solid rgba(183,0,255,.4);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.item-list li .bul svg{width:10px;height:10px;fill:#b700ff}
+.quote{background:rgba(183,0,255,.06);border-left:3px solid #b700ff;border-radius:0 10px 10px 0;padding:12px 16px;margin-top:8px;font-size:13.5px;color:rgba(220,180,255,.85);font-style:italic;line-height:1.6}
+.quote::before{content:'"';color:#b700ff;font-size:20px;line-height:0;vertical-align:-5px;margin-right:4px}
+.quote::after{content:'"';color:#b700ff;font-size:20px;line-height:0;vertical-align:-5px;margin-left:4px}
+.tags-wrap{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.tag{padding:5px 13px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid rgba(183,0,255,.3);background:rgba(183,0,255,.08);color:#d48bff}
+.result-card{background:rgba(183,0,255,.07);border:1px solid rgba(183,0,255,.18);border-radius:14px;padding:16px 18px;margin-bottom:10px}
+.result-card h4{font-size:13px;font-weight:700;color:#e879f9;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px}
+.result-card p,.result-card li{font-size:13.5px;color:rgba(220,180,255,.88);line-height:1.55}
+.result-card ul{list-style:none;display:flex;flex-direction:column;gap:6px}
+.result-card ul li::before{content:'→ ';color:#b700ff;font-weight:700}
+.big-quote{background:rgba(183,0,255,.08);border:1px solid rgba(183,0,255,.2);border-radius:14px;padding:18px 20px;margin:8px 0;font-size:14px;color:rgba(230,190,255,.9);font-style:italic;line-height:1.65;position:relative}
+.big-quote::before{content:'"';position:absolute;top:8px;left:14px;font-size:48px;color:rgba(183,0,255,.15);font-family:Georgia,serif;line-height:1}
+.big-quote span{display:block;padding-left:20px}
+.big-quote .author{font-size:11px;color:rgba(183,0,255,.5);font-style:normal;margin-top:8px;padding-left:20px;letter-spacing:.5px}
+
+/* CTA */
+.cta-block{max-width:900px;margin:0 auto 80px;padding:0 20px;position:relative;z-index:1}
+.cta-inner{background:rgba(183,0,255,.07);border:1px solid rgba(183,0,255,.25);border-radius:24px;padding:52px 40px;text-align:center;position:relative;overflow:hidden}
+.cta-inner::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(183,0,255,.14),transparent 70%);pointer-events:none}
+.cta-inner h2{font-size:clamp(22px,4vw,36px);font-weight:900;margin-bottom:12px;position:relative;z-index:1}
+.cta-inner p{font-size:15px;color:var(--muted);margin-bottom:32px;position:relative;z-index:1}
+.btn-cta{display:inline-flex;align-items:center;gap:10px;padding:18px 52px;border-radius:16px;background:linear-gradient(135deg,#9500cc,#b700ff,#7c3aed);color:#fff;font-size:17px;font-weight:800;letter-spacing:.4px;text-decoration:none;position:relative;overflow:hidden;transition:transform .3s ease,box-shadow .3s ease;animation:bp 2.5s ease-in-out infinite;z-index:1}
+.btn-cta:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(183,0,255,.7);animation:none}
+.btn-cta::after{content:'';position:absolute;top:-50%;left:-80%;width:50%;height:200%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.25),transparent);transform:skewX(-20deg);animation:shine 3s ease-in-out infinite}
+@keyframes bp{0%,100%{box-shadow:0 4px 22px rgba(183,0,255,.4),0 0 0 0 rgba(183,0,255,.25)}50%{box-shadow:0 4px 22px rgba(183,0,255,.4),0 0 0 10px rgba(183,0,255,.0)}}
+@keyframes shine{0%{left:-80%}60%,100%{left:120%}}
+.btn-cta svg{width:20px;height:20px;fill:#fff;position:relative;z-index:1}
+.btn-cta span{position:relative;z-index:1}
+
+/* DIVIDER */
+.div-line{height:1px;max-width:900px;margin:0 auto 60px;background:linear-gradient(90deg,transparent,rgba(183,0,255,.35) 40%,rgba(255,0,255,.3) 60%,transparent);position:relative;z-index:1}
+
+/* FOOTER */
+footer{position:relative;z-index:1;border-top:1px solid rgba(183,0,255,.1);padding:24px 20px;text-align:center;font-size:12px;color:rgba(183,0,255,.3);letter-spacing:.3px}
+
+/* RESPONSIVE */
+@media(max-width:640px){
+  .prog-cols{grid-template-columns:1fr}
+  .prog-inner{padding:24px 20px}
+  .acc-content{padding:4px 16px 20px}
+  .acc-head{padding:16px 18px}
+  .cta-inner{padding:36px 20px}
+  .btn-cta{padding:16px 32px;font-size:15px}
+}
+</style>
+</head>
+<body>
+
+<div class="dot-grid"></div>
+<div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div>
+<div id="pts"></div>
+
+<!-- ══ HERO ══ -->
+<div class="hero">
+  <div class="eyebrow">
+    <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+    2-й поток · Итоги экзамена
+  </div>
+  <h1 class="hero-title">
+    Сетевой <span class="g">НейроВзлет</span><br>— голоса участниц
+  </h1>
+  <p class="hero-sub">Интенсив от команды «МАКСИМУМ» · от хаоса в соцсетях к системной работе с ИИ</p>
+  <div class="stats-row">
+    <div class="stat"><div class="stat-n">21</div><div class="stat-l">участница</div></div>
+    <div class="stat"><div class="stat-n">2 нед.</div><div class="stat-l">интенсивной работы</div></div>
+    <div class="stat"><div class="stat-n">100%</div><div class="stat-l">идут на Профи</div></div>
+    <div class="stat"><div class="stat-n">×5</div><div class="stat-l">скорость контента</div></div>
+  </div>
+</div>
+
+<!-- ══ PROGRAM ══ -->
+<div class="prog-block">
+  <div class="prog-inner">
+    <div class="prog-title">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+      Программа марафона
+    </div>
+    <div class="prog-cols">
+      <div class="prog-col">
+        <h4><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>Теория (7 уроков)</h4>
+        <ul class="prog-list">
+          <li>Предобучение: ChatGPT, DeepSeek с нуля</li>
+          <li>Урок 1. Определение и анализ ЦА</li>
+          <li>Урок 2. Упаковка и позиционирование</li>
+          <li>Урок 3. Пост-закреп</li>
+          <li>Уроки 4–6. Контентная воронка (вовлекающий, экспертный, продающий посты)</li>
+          <li>Урок 7. Коммуникация в соцсетях</li>
+        </ul>
+      </div>
+      <div class="prog-col">
+        <h4><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>Формат</h4>
+        <ul class="prog-list">
+          <li>2 недели интенсивной работы над аккаунтом</li>
+          <li>7 домашних заданий + 1 неделя практики</li>
+          <li>10 эфиров в записи + 7 живых эфиров с разборами</li>
+          <li>Ежедневная обратная связь от куратора</li>
+          <li>Промпты к каждому уроку</li>
+          <li>Бонусы: трафик, нейрофотосессии, продвижение в разных соцсетях</li>
+        </ul>
+      </div>
+    </div>
+    <div class="prog-divider"></div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:10px;font-weight:600;">Что получаете на выходе:</div>
+    <div class="prog-outcome">
+      <span class="prog-tag">Контент-система с ИИ</span>
+      <span class="prog-tag">ИИ-Копирайтер</span>
+      <span class="prog-tag">ИИ-Коммуникатор</span>
+      <span class="prog-tag">ИИ-Контент-менеджер</span>
+      <span class="prog-tag">ИИ-Распаковщик</span>
+      <span class="prog-tag">ИИ-Специалист по ЦА</span>
+      <span class="prog-tag">Выход на НейроВзлет Профи</span>
+    </div>
+  </div>
+</div>
+
+<div class="div-line"></div>
+
+<!-- ══ ACCORDIONS ══ -->
+<div class="acc-section">
+  <div class="sec-label">Анализ экзаменационных анкет · 21 участница</div>
+  <h2 class="sec-title">Честно о марафоне — <em>словами участниц</em></h2>
+  <p class="sec-sub">Нажми на любой раздел, чтобы раскрыть</p>
+
+  <div class="acc-list">
+
+    <!-- 1. СТРАХИ И СОМНЕНИЯ -->
+    <div class="acc" id="a1">
+      <div class="acc-head" onclick="toggle('a1')">
+        <div class="acc-icon">
+          <svg viewBox="0 0 24 24" fill="#e879f9"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+        </div>
+        <div class="acc-head-text">
+          <h3>😰 Страхи и сомнения</h3>
+          <p>С чем приходили · что останавливало в начале</p>
+        </div>
+        <svg class="acc-arrow" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="acc-body">
+        <div class="acc-content">
+          <div class="acc-divider"></div>
+          <ul class="item-list">
+            <li><div class="bul"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <span><strong>«ИИ — это не для меня, это слишком сложно»</strong> — самый частый страх. Большинство участниц никогда не использовали нейросети и думали, что это технология не для них.</span></li>
+            <li><div class="bul"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <span><strong>Страх провала и «не смогу»</strong> — одна из участниц прямо написала: «Страх что не смогу». Другая уходила с первого потока и вернулась, потому что «не люблю бросать начатое».</span></li>
+            <li><div class="bul"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <span><strong>Страх общения с незнакомыми людьми онлайн</strong> — «не знала, как заговорить в интернете». Особенно острый у тех, кто привык работать офлайн.</span></li>
+            <li><div class="bul"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <span><strong>Страх приглашать людей</strong> после длинного перерыва в МЛМ. «После большого перерыва в компании был страх приглашать людей».</span></li>
+            <li><div class="bul"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <span><strong>Внутреннее сопротивление и перфекционизм</strong> — «внутренний перфекционист оставался недовольным, т.к. идеально не получается». Мешало сделать первый шаг.</span></li>
+            <li><div class="bul"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <span><strong>Сомнение: «а вдруг будет много непонятного?»</strong> — «ожидала, что будет сложно, много непонятного, как в первый раз».</span></li>
+            <li><div class="bul"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <span><strong>Страх первой коммуникации</strong> — «сложно было делать первые коммуникации, точнее страшно: вот ответят — и что дальше?»</span></li>
+            <li><div class="bul"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <span><strong>Нейросети на методом тыка</strong> — «столько появилось нейросетей, а что с ними делать — не знала. Исключительно методом тыка, многие не на русском, практически все платные».</span></li>
+          </ul>
+          <div class="big-quote" style="margin-top:16px">
+            <span>Раньше боялась и контента, и нейросетей, и общения. Теперь есть система и уверенность. Буду применять всё.</span>
+            <div class="author">— участница, вернувшаяся после слёта с первого потока</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. ПРОБЛЕМЫ И БОЛИ -->
+    <div class="acc" id="a2">
+      <div class="acc-head" onclick="toggle('a2')">
+        <div class="acc-icon">
+          <svg viewBox="0 0 24 24" fill="#b700ff"><path d="M4.25 5.61C6.27 8.2 10 13 10 13v6c0 .55.45 1 1 1h2c.55 0 1-.45 1-1v-6s3.72-4.8 5.74-7.39A.998.998 0 0 0 18.95 4H5.04a1 1 0 0 0-.79 1.61z"/></svg>
+        </div>
+        <div class="acc-head-text">
+          <h3>🔥 Проблемы и боли</h3>
+          <p>С какими задачами приходили на марафон</p>
+        </div>
+        <svg class="acc-arrow" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="acc-body">
+        <div class="acc-content">
+          <div class="acc-divider"></div>
+          <div class="result-card">
+            <h4>Проблема №1 — нет системы в соцсетях</h4>
+            <ul>
+              <li>Не вела соцсети вообще или вела хаотично</li>
+              <li>Писала посты «только по вдохновению» без цели и регулярности</li>
+              <li>Не понимала разницу между постом, сторис и видео</li>
+              <li>«Плохо делала воронки в соцсетях, не регулярно»</li>
+            </ul>
+          </div>
+          <div class="result-card">
+            <h4>Проблема №2 — не умею писать контент</h4>
+            <ul>
+              <li>Не знала что писать, чтобы люди откликались</li>
+              <li>Не знала, как писать о продукте красиво и с уважением к аудитории</li>
+              <li>Не умела составлять контент-план</li>
+              <li>«Писала посты без описания или просто пересылала с других страниц»</li>
+            </ul>
+          </div>
+          <div class="result-card">
+            <h4>Проблема №3 — нет онлайн-коммуникации</h4>
+            <ul>
+              <li>Не умела общаться с незнакомыми людьми в интернете</li>
+              <li>Не знала как предлагать продукт и вовлекать новых консультантов</li>
+              <li>Не умела рекрутировать онлайн</li>
+            </ul>
+          </div>
+          <div class="result-card">
+            <h4>Проблема №4 — нет роста команды</h4>
+            <ul>
+              <li>Застой в структуре, нет новых партнёров</li>
+              <li>Не понимала как систематически привлекать людей онлайн</li>
+              <li>«Нет роста команды, не умею работать в интернете»</li>
+            </ul>
+          </div>
+          <div class="tags-wrap" style="margin-top:4px">
+            <span class="tag">Нет системы</span><span class="tag">Нет контента</span><span class="tag">Нет коммуникации</span><span class="tag">Нет роста</span><span class="tag">Не знаю ЦА</span><span class="tag">ИИ — terra incognita</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. РЕЗУЛЬТАТЫ И ИНСАЙТЫ -->
+    <div class="acc" id="a3">
+      <div class="acc-head" onclick="toggle('a3')">
+        <div class="acc-icon">
+          <svg viewBox="0 0 24 24" fill="#22c55e"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+        </div>
+        <div class="acc-head-text">
+          <h3>🚀 Результаты и инсайты</h3>
+          <p>Конкретные цифры и главные открытия</p>
+        </div>
+        <svg class="acc-arrow" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="acc-body">
+        <div class="acc-content">
+          <div class="acc-divider"></div>
+          <div class="result-card">
+            <h4>📊 Скорость контента — до и после</h4>
+            <ul>
+              <li>1 пост — неделя → 5 постов в неделю за 15 минут (есть система!)</li>
+              <li>Контент на 3 дня — за 10 минут (раньше часами)</li>
+              <li>Пост за 30 мин → пост за 10 мин с корректировкой ИИ</li>
+              <li>Контент-план на неделю — за полчаса (раньше не умели вообще)</li>
+            </ul>
+          </div>
+          <div class="result-card">
+            <h4>📈 Охваты, лайки, подписчики</h4>
+            <ul>
+              <li>Охваты выросли с 25% до 74%</li>
+              <li>Лайки: с 2–3 до 14+ на один пост; с 1–2 до 30 и выше</li>
+              <li>Лайки на сторис и постах выросли в 3 раза</li>
+              <li>Просмотры сторис: с 5–7 до 23–25</li>
+              <li>Вовлекающий пост собрал 38 лайков и 458 просмотров (до этого — единицы)</li>
+              <li>+93 новых друга в ВК за период марафона (55 из холодных контактов)</li>
+              <li>+14 подписчиков в ВК за одну неделю (против 25 за 3 года в ТГ)</li>
+              <li>Просмотры и лайки постов выросли в 3 раза, 7 живых комментариев о контенте</li>
+            </ul>
+          </div>
+          <div class="result-card">
+            <h4>🤝 Коммуникации и регистрации</h4>
+            <ul>
+              <li>13 открытых диалогов → 7 в продолжении → 1 регистрация на бизнес</li>
+              <li>15 открытых коммуникаций → 3 регистрации (1 с заказом)</li>
+              <li>3 регистрации новичков со стартовым заказом</li>
+              <li>3 входящие заявки на бизнес + регистрации 2-х покупателей</li>
+              <li>Пришла покупателем → чат 65 пользователями + VIP-статус за 1 каталог</li>
+              <li>3 партнёра сами пошли на марафон вслед за участницей</li>
+              <li>1 партнёр и 2 покупателя за период марафона</li>
+            </ul>
+          </div>
+          <div class="result-card">
+            <h4>💡 Главные инсайты</h4>
+            <ul>
+              <li>«Нейросети — это не страшно, это просто инструмент»</li>
+              <li>«Главное — начать не бояться, и всё получится»</li>
+              <li>«Поняла как двигаться СТРАТЕГИЧЕСКИ — что, где, для кого, когда и зачем»</li>
+              <li>«Раскрыла себя как человека с опытом сетевика»</li>
+              <li>«Легко, совершенно не страшно и даже очень интересно стало заводить диалоги»</li>
+              <li>«Открылись огромные горизонты работы в соцсетях»</li>
+              <li>«Нашла вариант как вписать тему Фаберлик в мою основную деятельность»</li>
+            </ul>
+          </div>
+          <div class="result-card">
+            <h4>🎓 Навыки, которые наработали</h4>
+            <ul>
+              <li>Работа с промптами — писать задачи для ИИ чётко и правильно</li>
+              <li>Создание контент-планов, воронок, цепочек сторис</li>
+              <li>Написание вовлекающих, экспертных и продающих постов</li>
+              <li>Онлайн-коммуникация и утепление холодных контактов</li>
+              <li>Понимание своей ЦА и позиционирование в нише</li>
+              <li>Работа с Google Docs, ВКонтакте, DeepSeek, ChatGPT</li>
+              <li>Голосовая презентация бизнеса и отработка возражений</li>
+            </ul>
+          </div>
+          <div class="big-quote">
+            <span>Это тот самый «волшебный пендель», когда ты не просто летишь, а ВЗЛЕТАЕШЬ, держа в руках этот неимоверный инструмент — искусственный интеллект!</span>
+            <div class="author">— участница, открывшая 13 диалогов и получившая регистрацию на бизнес</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. ВПЕЧАТЛЕНИЯ И ЭМОЦИИ -->
+    <div class="acc" id="a4">
+      <div class="acc-head" onclick="toggle('a4')">
+        <div class="acc-icon">
+          <svg viewBox="0 0 24 24" fill="#e879f9"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+        </div>
+        <div class="acc-head-text">
+          <h3>✨ Впечатления и эмоции</h3>
+          <p>Как участницы описывали свой опыт</p>
+        </div>
+        <svg class="acc-arrow" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="acc-body">
+        <div class="acc-content">
+          <div class="acc-divider"></div>
+          <ul class="item-list">
+            <li><div class="bul"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <span>«<strong>Легко было удивляться</strong> 😊 — каждый день были маленькие открытия, и это вдохновляло»</span></li>
+            <li><div class="bul"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <span>«Формат марафона — 🔥👍, <strong>всё чётко, ясно и работает!</strong>»</span></li>
+            <li><div class="bul"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <span>«Работать с нейросетью <strong>очень приятно и быстро</strong>» — говорили даже те, кто пришёл полным новичком</span></li>
+            <li><div class="bul"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <span>«<strong>Очень полезно, познавательно и увлекательно</strong>» — три слова, которые встречались у многих</span></li>
+            <li><div class="bul"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <span>«Я ожидала много информации, а её <strong>ещё больше моих ожиданий!</strong>» — приятная неожиданность</span></li>
+            <li><div class="bul"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <span>«Даже не могла предположить, что <strong>открываются такие большие горизонты</strong> работы в соцсетях»</span></li>
+            <li><div class="bul"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <span>Особая благодарность кураторам — <strong>Эвелине и Любе</strong>: «Вы всегда поможете и подскажете»</span></li>
+            <li><div class="bul"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <span>«<strong>Сейчас ИИ повсюду</strong> и важно научиться работать с ним. А ещё это ОЧЕНЬ интересно!»</span></li>
+          </ul>
+          <div class="big-quote" style="margin-top:16px">
+            <span>Колоссальный опыт работы с ИИ. Такие навыки на дороге не валяются. Благодарю Эвелину и Любу за такое обучение!</span>
+            <div class="author">— участница, которая 2 года не вела соцсети</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. АРГУМЕНТЫ -->
+    <div class="acc" id="a5">
+      <div class="acc-head" onclick="toggle('a5')">
+        <div class="acc-icon">
+          <svg viewBox="0 0 24 24" fill="#a855f7"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+        </div>
+        <div class="acc-head-text">
+          <h3>💬 Почему рекомендуют партнёрам</h3>
+          <p>Аргументы участниц — своими словами</p>
+        </div>
+        <svg class="acc-arrow" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="acc-body">
+        <div class="acc-content">
+          <div class="acc-divider"></div>
+          <ul class="item-list">
+            <li><div class="bul"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <span>«<strong>Марафон даёт не просто знания, а систему, поддержку и веру в себя.</strong> Вместе мы сможем расти быстрее и легче»</span></li>
+            <li><div class="bul"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <span>«Марафон даёт <strong>пошаговую систему, а не разрозненные советы</strong>»</span></li>
+            <li><div class="bul"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <span>«<strong>100% эффективная практика!</strong>» — после марафона сразу видишь результат, не теория в пустоту</span></li>
+            <li><div class="bul"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <span>«<strong>Чем больше партнёров пройдёт, тем больше рост команды</strong> и доход — и партнёров, и мой»</span></li>
+            <li><div class="bul"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <span>«Чтобы <strong>набраться опыта и перебороть свои страхи</strong> — ведь все мы боялись, но всё получилось»</span></li>
+            <li><div class="bul"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <span>«<strong>Подача материала в очень доступной форме</strong>, уроки в записи — можно смотреть в своём темпе»</span></li>
+            <li><div class="bul"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <span>«В современном мире <strong>нужно развиваться и разбираться в новых методах</strong>. ИИ — это сейчас везде»</span></li>
+            <li><div class="bul"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <span>«После марафона <strong>выходишь прям «до / после»</strong> — сколько навыков и понимания получаешь»</span></li>
+            <li><div class="bul"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <span>«<strong>Мои партнёры тоже должны научиться работать с ИИ</strong> — это их конкурентное преимущество»</span></li>
+          </ul>
+          <div class="big-quote" style="margin-top:16px">
+            <span>Сама прошла этот путь — со страхами, сомнениями, даже со слётом в первый раз. Знаю, как это работает. Моим партнёрам, особенно тем, кто боится начинать, это будет бесценно. Вместе мы сможем расти быстрее и легче.</span>
+            <div class="author">— участница, вернувшаяся со второго потока</div>
+          </div>
+          <div class="big-quote" style="margin-top:8px">
+            <span>Это не очередное обучение, про которое ты потом забываешь. Благодаря такому количеству практики — оттачиваешь свои умения, и они становятся частью твоего ведения бизнеса.</span>
+            <div class="author">— участница, пославшая на марафон своих партнёров</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="div-line"></div>
+
+<!-- CTA -->
+<div class="cta-block">
+  <div class="cta-inner">
+    <h2>Хочешь таких же результатов?</h2>
+    <p>Присоединяйся к следующему потоку «Сетевого НейроВзлета» — напиши напрямую</p>
+    <a href="https://t.me/energia_uspeha" target="_blank" rel="noopener noreferrer" class="btn-cta">
+      <svg viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+      <span>Записаться на марафон</span>
+    </a>
+  </div>
+</div>
+
+<footer>© 2025 · Команда «МАКСИМУМ» · Сетевой НейроВзлет · ИИ · МЛМ · Результаты</footer>
+
+<script>
+function toggle(id){
+  const el=document.getElementById(id);
+  const isOpen=el.classList.contains('open');
+  document.querySelectorAll('.acc').forEach(a=>a.classList.remove('open'));
+  if(!isOpen) el.classList.add('open');
+}
+
+/* Particles */
+const pc=document.getElementById('pts');
+const cl=['rgba(183,0,255,.65)','rgba(255,0,255,.45)','rgba(168,85,247,.55)'];
+for(let i=0;i<30;i++){
+  const e=document.createElement('div');e.className='pt';
+  const s=Math.random()*3.5+1;
+  e.style.cssText=`width:${s}px;height:${s}px;left:${Math.random()*100}%;`+
+    `background:${cl[Math.floor(Math.random()*cl.length)]};`+
+    `animation-duration:${Math.random()*14+8}s;animation-delay:${Math.random()*12}s;`+
+    `box-shadow:0 0 ${s*2}px ${cl[Math.floor(Math.random()*cl.length)]};`;
+  pc.appendChild(e);
+}
+
+/* Open first accordion by default */
+toggle('a3');
+</script>
+</body>
+</html>
