@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Команда Нейро-помощников для МЛМ</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --neon:#b700ff;--neon2:#ff00ff;--violet:#7c3aed;--pink:#e879f9;
+  --bg:#07000f;--bg2:#0f0020;--card:rgba(20,0,40,.75);
+  --text:#f0e6ff;--muted:rgba(210,170,255,.7)
+}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+  overflow-x:hidden;line-height:1.6
+}
+
+/* ══ BACKGROUND ══ */
+#bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+.dot-grid{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:radial-gradient(circle,rgba(183,0,255,.13) 1px,transparent 0);
+  background-size:38px 38px
+}
+.orb{position:fixed;border-radius:50%;filter:blur(100px);pointer-events:none;z-index:0}
+.o1{width:500px;height:500px;background:radial-gradient(#8800cc88,transparent 70%);top:-150px;left:-150px;animation:orb 10s ease-in-out infinite}
+.o2{width:400px;height:400px;background:radial-gradient(#6600aa66,transparent 70%);bottom:-100px;right:-100px;animation:orb 13s ease-in-out infinite reverse}
+.o3{width:280px;height:280px;background:radial-gradient(#cc00ff44,transparent 70%);top:40%;right:5%;animation:orb 8s ease-in-out infinite 3s}
+@keyframes orb{0%,100%{transform:translate(0,0) scale(1)}40%{transform:translate(30px,-30px) scale(1.1)}70%{transform:translate(-20px,20px) scale(.92)}}
+
+/* ══ PARTICLES ══ */
+#pts{position:fixed;inset:0;z-index:0;pointer-events:none}
+.pt{position:absolute;border-radius:50%;animation:rise linear infinite;opacity:0}
+@keyframes rise{
+  0%{transform:translateY(100vh);opacity:0}8%{opacity:1}
+  90%{opacity:.7}100%{transform:translateY(-80px);opacity:0}
+}
+
+/* ══ NAV ══ */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  padding:16px 40px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(7,0,15,.7);backdrop-filter:blur(18px);
+  border-bottom:1px solid rgba(183,0,255,.18)
+}
+.nav-logo{
+  display:flex;align-items:center;gap:10px;text-decoration:none
+}
+.nav-logo svg{width:28px;height:28px;fill:#b700ff;filter:drop-shadow(0 0 6px #b700ff)}
+.nav-brand{
+  font-size:14px;font-weight:700;letter-spacing:.5px;
+  background:linear-gradient(90deg,#b700ff,#e879f9);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text
+}
+.nav-cta{
+  padding:9px 22px;border-radius:10px;font-size:13px;font-weight:700;
+  background:linear-gradient(135deg,#9500cc,#b700ff);
+  color:#fff;text-decoration:none;letter-spacing:.3px;
+  transition:transform .2s ease,box-shadow .2s ease
+}
+.nav-cta:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(183,0,255,.5)}
+
+/* ══ DROPDOWN ══ */
+.nav-dropdown{position:relative}
+.nav-logo-btn{
+  display:flex;align-items:center;gap:10px;
+  background:none;border:none;cursor:pointer;padding:0;
+  text-decoration:none
+}
+.nav-logo-btn svg.logo-icon{width:28px;height:28px;fill:#b700ff;filter:drop-shadow(0 0 6px #b700ff);flex-shrink:0}
+.nav-logo-btn .nav-brand{
+  font-size:14px;font-weight:700;letter-spacing:.5px;
+  background:linear-gradient(90deg,#b700ff,#e879f9);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text
+}
+.drop-arrow{
+  width:14px;height:14px;flex-shrink:0;
+  stroke:rgba(183,0,255,.7);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;
+  transition:transform .3s ease;margin-left:2px
+}
+.nav-dropdown.open .drop-arrow{transform:rotate(180deg)}
+.dropdown-menu{
+  position:absolute;top:calc(100% + 14px);left:0;
+  min-width:320px;
+  background:rgba(12,0,24,.95);
+  border:1px solid rgba(183,0,255,.3);
+  border-radius:18px;
+  padding:10px 8px;
+  backdrop-filter:blur(24px);
+  box-shadow:0 20px 60px rgba(183,0,255,.25),0 0 0 1px rgba(255,255,255,.04) inset;
+  opacity:0;transform:translateY(-8px) scale(.97);pointer-events:none;
+  transition:opacity .22s ease,transform .22s cubic-bezier(.22,1,.36,1);
+  z-index:200
+}
+.nav-dropdown.open .dropdown-menu{opacity:1;transform:translateY(0) scale(1);pointer-events:all}
+.drop-header{
+  font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;
+  color:rgba(183,0,255,.45);padding:8px 14px 6px;
+}
+.drop-divider{height:1px;background:rgba(183,0,255,.15);margin:6px 6px}
+.drop-item{
+  display:flex;align-items:center;gap:11px;
+  padding:10px 14px;border-radius:12px;
+  color:rgba(220,180,255,.85);font-size:13.5px;font-weight:500;
+  cursor:default;transition:background .18s ease,color .18s ease;
+  user-select:none
+}
+.drop-item:hover{background:rgba(183,0,255,.12);color:#f0d0ff}
+.drop-item svg{width:16px;height:16px;flex-shrink:0;fill:#b700ff;opacity:.8;transition:opacity .18s ease}
+.drop-item:hover svg{opacity:1}
+@media(max-width:480px){
+  .dropdown-menu{min-width:calc(100vw - 32px);left:-4px}
+}
+
+/* ══ SECTIONS ══ */
+section{position:relative;z-index:1}
+
+/* ══ HERO ══ */
+.hero{
+  min-height:100vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  text-align:center;padding:120px 24px 80px
+}
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:6px 18px;border-radius:40px;
+  border:1px solid rgba(183,0,255,.4);background:rgba(183,0,255,.1);
+  font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;
+  color:#d48bff;margin-bottom:28px;
+  animation:fadeUp .7s ease both
+}
+.hero-eyebrow svg{width:14px;height:14px;fill:#b700ff}
+.hero-title{
+  font-size:clamp(32px,7vw,72px);font-weight:900;
+  line-height:1.1;letter-spacing:-1px;margin-bottom:28px;
+  animation:fadeUp .7s ease .1s both
+}
+.hero-title .line1{
+  display:block;
+  background:linear-gradient(120deg,#ffffff,#f0c8ff,#b700ff);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text
+}
+.hero-title .line2{
+  display:block;
+  background:linear-gradient(120deg,#ff66ff,#b700ff,#7c3aed,#ff66ff);
+  background-size:200% auto;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  animation:gshift 5s linear infinite;
+  filter:drop-shadow(0 0 22px rgba(183,0,255,.6))
+}
+@keyframes gshift{0%{background-position:0%}100%{background-position:200%}}
+.hero-desc{
+  max-width:620px;font-size:clamp(16px,2.2vw,20px);
+  color:var(--muted);margin-bottom:44px;
+  animation:fadeUp .7s ease .2s both
+}
+.hero-desc strong{color:#e879f9;font-weight:600}
+.hero-actions{display:flex;flex-direction:column;align-items:center;gap:12px;animation:fadeUp .7s ease .3s both}
+.btn-hero{
+  display:inline-flex;align-items:center;gap:10px;
+  padding:20px 52px;border-radius:16px;font-size:18px;font-weight:800;
+  letter-spacing:.5px;text-decoration:none;color:#fff;
+  background:linear-gradient(135deg,#9500cc,#b700ff,#7c3aed);
+  background-size:200% auto;position:relative;overflow:hidden;
+  transition:transform .3s ease,box-shadow .3s ease;
+  animation:pulse 2.5s ease-in-out infinite
+}
+.btn-hero::after{
+  content:'';position:absolute;top:-50%;left:-80%;
+  width:50%;height:200%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.25),transparent);
+  transform:skewX(-20deg);animation:shine 3s ease-in-out infinite
+}
+.btn-hero:hover{transform:translateY(-4px) scale(1.02);box-shadow:0 14px 40px rgba(183,0,255,.7);animation:none}
+.btn-hero svg{width:22px;height:22px;fill:#fff;position:relative;z-index:1}
+.btn-hero span{position:relative;z-index:1}
+@keyframes pulse{
+  0%,100%{box-shadow:0 4px 24px rgba(183,0,255,.4),0 0 0 0 rgba(183,0,255,.3)}
+  50%{box-shadow:0 4px 24px rgba(183,0,255,.4),0 0 0 12px rgba(183,0,255,.0)}
+}
+@keyframes shine{0%{left:-80%}60%,100%{left:120%}}
+.btn-sub{font-size:12px;color:rgba(183,0,255,.5);letter-spacing:.3px}
+.hero-scroll{
+  position:absolute;bottom:32px;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  color:rgba(183,0,255,.4);font-size:11px;letter-spacing:1px;text-transform:uppercase;
+  animation:scrollBob 2s ease-in-out infinite
+}
+.hero-scroll svg{width:20px;height:20px;fill:none;stroke:rgba(183,0,255,.4);stroke-width:2}
+@keyframes scrollBob{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(6px)}}
+
+/* ══ SECTION COMMON ══ */
+.section-inner{max-width:1100px;margin:0 auto;padding:0 24px}
+.section-tag{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:5px 14px;border-radius:30px;
+  border:1px solid rgba(183,0,255,.35);background:rgba(183,0,255,.08);
+  font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+  color:#b700ff;margin-bottom:16px
+}
+.section-title{
+  font-size:clamp(26px,4.5vw,48px);font-weight:900;
+  line-height:1.15;letter-spacing:-.5px;margin-bottom:16px
+}
+.section-title em{
+  font-style:normal;
+  background:linear-gradient(120deg,#ff66ff,#b700ff,#a855f7);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text
+}
+.section-sub{font-size:clamp(15px,2vw,18px);color:var(--muted);max-width:560px;margin-bottom:56px}
+
+/* ══ BENEFITS ══ */
+.benefits{padding:100px 0}
+.benefits-header{text-align:center;display:flex;flex-direction:column;align-items:center}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:24px}
+.card{
+  background:var(--card);
+  border:1px solid rgba(183,0,255,.2);
+  border-radius:24px;padding:36px 32px;
+  backdrop-filter:blur(16px);
+  transition:transform .35s cubic-bezier(.22,1,.36,1),box-shadow .35s ease,border-color .35s ease;
+  opacity:0;transform:translateY(40px)
+}
+.card.visible{opacity:1;transform:translateY(0);transition:opacity .6s ease,transform .6s cubic-bezier(.22,1,.36,1),box-shadow .35s ease,border-color .35s ease}
+.card:hover{transform:translateY(-10px);border-color:rgba(183,0,255,.5);box-shadow:0 20px 50px rgba(183,0,255,.2)}
+.card-icon{
+  width:60px;height:60px;border-radius:16px;
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:22px;position:relative
+}
+.card-icon::before{
+  content:'';position:absolute;inset:-1px;border-radius:17px;
+  background:linear-gradient(135deg,rgba(183,0,255,.6),rgba(124,58,237,.3));
+  z-index:0
+}
+.card-icon::after{
+  content:'';position:absolute;inset:1px;border-radius:15px;
+  background:rgba(20,0,40,.9);z-index:1
+}
+.card-icon svg{width:28px;height:28px;position:relative;z-index:2;filter:drop-shadow(0 0 6px rgba(183,0,255,.7))}
+.card-num{
+  font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+  color:rgba(183,0,255,.5);margin-bottom:10px
+}
+.card-title{font-size:20px;font-weight:800;margin-bottom:12px;line-height:1.2}
+.card-text{font-size:14.5px;color:var(--muted);line-height:1.65}
+.card:nth-child(1){transition-delay:.05s}
+.card:nth-child(2){transition-delay:.15s}
+.card:nth-child(3){transition-delay:.25s}
+
+/* ══ FOR WHOM ══ */
+.forwhom{padding:100px 0}
+.forwhom-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.fw-card{
+  background:rgba(15,0,32,.6);border:1px solid rgba(183,0,255,.15);
+  border-radius:20px;padding:28px 26px;
+  display:flex;align-items:flex-start;gap:16px;
+  opacity:0;transform:translateX(-30px);
+  transition:opacity .6s ease,transform .6s cubic-bezier(.22,1,.36,1)
+}
+.fw-card.visible{opacity:1;transform:translateX(0)}
+.fw-card:nth-child(2){transform:translateX(30px)}
+.fw-card:nth-child(2).visible{transform:translateX(0)}
+.fw-card:nth-child(3){transform:translateX(-30px)}
+.fw-card:nth-child(4){transform:translateX(30px)}
+.fw-card:nth-child(3).visible,.fw-card:nth-child(4).visible{transform:translateX(0)}
+.fw-card:nth-child(1){transition-delay:.05s}.fw-card:nth-child(2){transition-delay:.1s}
+.fw-card:nth-child(3){transition-delay:.15s}.fw-card:nth-child(4){transition-delay:.2s}
+.fw-icon{
+  width:48px;height:48px;flex-shrink:0;border-radius:14px;
+  background:rgba(183,0,255,.12);border:1px solid rgba(183,0,255,.3);
+  display:flex;align-items:center;justify-content:center
+}
+.fw-icon svg{width:22px;height:22px;fill:#b700ff;filter:drop-shadow(0 0 4px #b700ff)}
+.fw-title{font-size:16px;font-weight:700;margin-bottom:6px}
+.fw-text{font-size:13.5px;color:var(--muted);line-height:1.6}
+
+/* ══ WHY SECTION ══ */
+.why{padding:100px 0;text-align:center}
+.why-box{
+  max-width:780px;margin:0 auto;
+  background:rgba(183,0,255,.06);
+  border:1px solid rgba(183,0,255,.25);
+  border-radius:28px;padding:52px 48px;
+  position:relative;overflow:hidden
+}
+.why-box::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 0%,rgba(183,0,255,.12),transparent 70%);
+  pointer-events:none
+}
+.why-box p{font-size:clamp(16px,2.2vw,20px);color:rgba(220,180,255,.9);line-height:1.8;position:relative;z-index:1}
+.why-box strong{color:#e879f9;font-weight:700}
+.why-box .quote-mark{
+  font-size:120px;line-height:0;color:rgba(183,0,255,.08);
+  font-family:Georgia,serif;position:absolute;top:30px;left:24px
+}
+
+/* ══ CTA SECTION ══ */
+.cta-section{
+  padding:120px 24px;text-align:center;
+  position:relative
+}
+.cta-section::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 50%,rgba(183,0,255,.12),transparent 70%);
+  pointer-events:none
+}
+.cta-section .section-inner{
+  display:flex;flex-direction:column;align-items:center;
+  position:relative;z-index:1
+}
+.cta-section .section-title{text-align:center}
+.cta-section .section-sub{text-align:center;margin-left:auto;margin-right:auto}
+.btn-cta{
+  display:inline-flex;align-items:center;justify-content:center;gap:12px;
+  padding:24px 80px;border-radius:20px;
+  font-size:clamp(20px,3vw,28px);font-weight:900;letter-spacing:1px;
+  text-decoration:none;color:#fff;
+  background:linear-gradient(135deg,#8800cc,#b700ff,#7c3aed);
+  background-size:200% auto;position:relative;overflow:hidden;
+  transition:transform .3s ease,box-shadow .3s ease;
+  animation:pulseBig 2.5s ease-in-out infinite;
+  margin-bottom:18px
+}
+.btn-cta::before{
+  content:'';position:absolute;inset:-2px;border-radius:22px;
+  background:linear-gradient(135deg,#ff00ff,#b700ff,#7c3aed,#ff00ff);
+  z-index:-1;animation:borderSpin 4s linear infinite
+}
+.btn-cta::after{
+  content:'';position:absolute;top:-50%;left:-80%;
+  width:50%;height:200%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent);
+  transform:skewX(-20deg);animation:shine 2.5s ease-in-out infinite
+}
+.btn-cta span{position:relative;z-index:1}
+.btn-cta svg{width:26px;height:26px;fill:#fff;position:relative;z-index:1;flex-shrink:0}
+.btn-cta:hover{transform:translateY(-5px) scale(1.03);box-shadow:0 20px 60px rgba(183,0,255,.75);animation:none}
+@keyframes pulseBig{
+  0%,100%{box-shadow:0 6px 30px rgba(183,0,255,.5),0 0 0 0 rgba(183,0,255,.3)}
+  50%{box-shadow:0 6px 30px rgba(183,0,255,.5),0 0 0 16px rgba(183,0,255,.0)}
+}
+@keyframes borderSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.cta-link{
+  font-size:13px;color:rgba(183,0,255,.45);
+  text-decoration:none;letter-spacing:.3px;
+  transition:color .2s ease
+}
+.cta-link:hover{color:rgba(183,0,255,.7)}
+
+/* ══ FOOTER ══ */
+footer{
+  position:relative;z-index:1;
+  border-top:1px solid rgba(183,0,255,.12);
+  padding:28px 40px;
+  display:flex;align-items:center;justify-content:center;
+  gap:8px;flex-wrap:wrap
+}
+footer p{font-size:12px;color:rgba(183,0,255,.3);letter-spacing:.3px;text-align:center}
+
+/* ══ DIVIDER ══ */
+.divider{
+  height:1px;max-width:1100px;margin:0 auto;
+  background:linear-gradient(90deg,transparent,rgba(183,0,255,.35) 40%,rgba(255,0,255,.3) 60%,transparent)
+}
+
+/* ══ ANIMATIONS ══ */
+@keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+
+/* ══ RESPONSIVE ══ */
+@media(max-width:768px){
+  nav{padding:14px 20px}
+  .nav-brand{font-size:12px}
+  .hero{padding:100px 20px 70px}
+  .benefits,.forwhom,.why,.cta-section{padding:70px 0}
+  .why-box{padding:36px 24px}
+  .forwhom-grid{grid-template-columns:1fr}
+  .fw-card:nth-child(even){transform:translateX(0)}
+  .btn-cta{padding:20px 48px}
+  .section-inner{padding:0 18px}
+}
+@media(max-width:480px){
+  .cards{grid-template-columns:1fr}
+  .btn-hero{padding:18px 36px;font-size:16px}
+}
+</style>
+</head>
+<body>
+
+<!-- BG -->
+<div class="dot-grid"></div>
+<div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div>
+<div id="pts"></div>
+
+<!-- ══ NAV ══ -->
+<nav>
+  <div class="nav-dropdown" id="navDropdown">
+    <button class="nav-logo-btn" id="dropToggle" aria-expanded="false" aria-haspopup="true">
+      <svg class="logo-icon" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm0 2a8 8 0 1 1 0 16A8 8 0 0 1 12 4zm-1 3v5.586l-2.707 2.707 1.414 1.414L12.414 14H13V7h-2z" opacity=".4"/><rect x="9" y="7" width="2" height="6" rx="1"/><rect x="9" y="7" width="6" height="2" rx="1"/><circle cx="12" cy="12" r="1.5"/></svg>
+      <span class="nav-brand">Нейро-помощники для МЛМ</span>
+      <svg class="drop-arrow" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+
+    <div class="dropdown-menu" role="menu">
+      <div class="drop-header">Команда ИИ-ассистентов</div>
+      <div class="drop-divider"></div>
+
+      <div class="drop-item">
+        <svg viewBox="0 0 24 24"><path d="M3 5h2V3a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v2h2a1 1 0 0 1 0 2h-1v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7H3a1 1 0 0 1 0-2zm4 2v13h10V7H7zm2-2h6V3H9v2zm1 4h4v2h-4V9zm0 4h4v2h-4v-2z"/></svg>
+        Копирайтер
+      </div>
+      <div class="drop-item">
+        <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg>
+        Копирайтер для продажи МЛМ-продукта
+      </div>
+      <div class="drop-item">
+        <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+        Коммуникатор
+      </div>
+      <div class="drop-item">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+        Распаковщик экспертности для МЛМ
+      </div>
+      <div class="drop-item">
+        <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+        Специалист по ЦА в МЛМ
+      </div>
+      <div class="drop-item">
+        <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 4l5 2.18V11c0 3.5-2.33 6.79-5 7.93-2.67-1.14-5-4.43-5-7.93V7.18L12 5z"/></svg>
+        Специалист по УТП в МЛМ
+      </div>
+      <div class="drop-item">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+        Эксперт по Личному Бренду в МЛМ
+      </div>
+      <div class="drop-item">
+        <svg viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zm-7 9.17V16l7 4 7-4v-3.83L12 17l-7-4.83z"/></svg>
+        Наставник для Новичков
+      </div>
+      <div class="drop-item">
+        <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+        Рекрутер
+      </div>
+      <div class="drop-item">
+        <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+        Тренер по презентациям бизнеса
+      </div>
+    </div>
+  </div>
+
+  <a href="https://t.me/energia_uspeha" target="_blank" rel="noopener noreferrer" class="nav-cta">Хочу →</a>
+</nav>
+
+<!-- ══ HERO ══ -->
+<section class="hero">
+  <div class="hero-eyebrow">
+    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+    Новый уровень сетевого бизнеса
+  </div>
+
+  <h1 class="hero-title">
+    <span class="line1">Команда Нейро-помощников</span>
+    <span class="line2">для&nbsp;МЛМ</span>
+  </h1>
+
+  <p class="hero-desc">
+    Делегируйте&nbsp;ИИ работу в&nbsp;соцсетях, рекрутинг
+    и&nbsp;работу с&nbsp;командой — для&nbsp;<strong>мощного продвижения</strong>
+    вашего сетевого бизнеса
+  </p>
+
+  <div class="hero-actions">
+    <a href="https://t.me/energia_uspeha" target="_blank" rel="noopener noreferrer" class="btn-hero">
+      <svg viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+      <span>ХОЧУ</span>
+    </a>
+    <span class="btn-sub">Узнать подробнее в Telegram</span>
+  </div>
+
+  <div class="hero-scroll">
+    <span>Узнать больше</span>
+    <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══ BENEFITS ══ -->
+<section class="benefits">
+  <div class="section-inner">
+    <div class="benefits-header">
+      <div class="section-tag">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="#b700ff"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        Ключевые преимущества
+      </div>
+      <h2 class="section-title">Почему это <em>меняет всё</em></h2>
+      <p class="section-sub">Три причины, по которым ИИ-команда становится вашим главным инструментом роста</p>
+    </div>
+
+    <div class="cards">
+
+      <!-- Card 1 -->
+      <div class="card">
+        <div class="card-icon">
+          <!-- Lightning / energy icon -->
+          <svg viewBox="0 0 24 24" fill="#b700ff"><path d="M13 2L4.5 13.5H11L10 22l8.5-11.5H13L13 2z"/></svg>
+        </div>
+        <div class="card-num">01</div>
+        <h3 class="card-title">Экономия времени, сил и энергии</h3>
+        <p class="card-text">
+          ИИ-ассистенты работают 24/7 без усталости и выходных.
+          Освободите себя от рутинных задач и направьте энергию
+          на стратегию и развитие бизнеса.
+        </p>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="card">
+        <div class="card-icon">
+          <!-- Broadcast / megaphone icon -->
+          <svg viewBox="0 0 24 24" fill="#e879f9"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 7.97v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+        </div>
+        <div class="card-num">02</div>
+        <h3 class="card-title">Больше не нужно повторять одно и то же</h3>
+        <p class="card-text">
+          Каждый новичок-партнёр получает полный, качественный
+          онбординг автоматически. Нейро-помощник сам отвечает,
+          обучает и поддерживает без вашего участия.
+        </p>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="card">
+        <div class="card-icon">
+          <!-- Filter / funnel icon -->
+          <svg viewBox="0 0 24 24" fill="#a855f7"><path d="M4.25 5.61C6.27 8.2 10 13 10 13v6c0 .55.45 1 1 1h2c.55 0 1-.45 1-1v-6s3.72-4.8 5.74-7.39A.998.998 0 0 0 18.95 4H5.04a1 1 0 0 0-.79 1.61z"/></svg>
+        </div>
+        <div class="card-num">03</div>
+        <h3 class="card-title">Автоматизация заявок и умная фильтрация</h3>
+        <p class="card-text">
+          Система автоматически обрабатывает входящие заявки
+          и отсеивает нецелевых кандидатов. К вам приходят только
+          мотивированные, готовые к действию люди.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══ FOR WHOM ══ -->
+<section class="forwhom">
+  <div class="section-inner">
+    <div style="display:flex;flex-direction:column;align-items:center;text-align:center">
+      <div class="section-tag">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="#b700ff"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+        Для кого
+      </div>
+      <h2 class="section-title">Подходит <em>именно вам</em></h2>
+      <p class="section-sub" style="margin-left:auto;margin-right:auto">
+        Нейро-команда одинаково эффективна на любом уровне бизнеса
+      </p>
+    </div>
+
+    <div class="forwhom-grid">
+
+      <div class="fw-card">
+        <div class="fw-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+        </div>
+        <div>
+          <div class="fw-title">Новичкам в МЛМ</div>
+          <p class="fw-text">Стартуйте уверенно с первого дня. ИИ заменяет опыт, которого ещё нет — ведёт переговоры, отвечает на вопросы, выстраивает доверие.</p>
+        </div>
+      </div>
+
+      <div class="fw-card">
+        <div class="fw-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 4l5 2.18V11c0 3.5-2.33 6.79-5 7.93-2.67-1.14-5-4.43-5-7.93V7.18L12 5z"/></svg>
+        </div>
+        <div>
+          <div class="fw-title">ТОП-лидерам</div>
+          <p class="fw-text">Масштабируйте без предела. Нейро-команда ведёт тысячи диалогов параллельно, пока вы занимаетесь стратегией и вдохновляете команду.</p>
+        </div>
+      </div>
+
+      <div class="fw-card">
+        <div class="fw-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        </div>
+        <div>
+          <div class="fw-title">Личным бизнес-партнёрам</div>
+          <p class="fw-text">Работайте персонально и в масштабе одновременно. ИИ поддерживает каждого партнёра индивидуально, как будто вы рядом 24/7.</p>
+        </div>
+      </div>
+
+      <div class="fw-card">
+        <div class="fw-icon">
+          <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+        </div>
+        <div>
+          <div class="fw-title">Командам</div>
+          <p class="fw-text">Единый стандарт работы для всей структуры. Обучение, поддержка и рекрутинг автоматизированы — команда растёт быстрее и стабильнее.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══ WHY PROFITABLE ══ -->
+<section class="why">
+  <div class="section-inner">
+    <div class="why-box">
+      <div class="quote-mark">"</div>
+      <div class="section-tag" style="margin:0 auto 20px">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="#b700ff"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm4.24 16L12 15.45 7.77 18l1.12-4.81-3.73-3.23 4.92-.42L12 5l1.92 4.53 4.92.42-3.73 3.23L16.23 18z"/></svg>
+        Почему выгодно
+      </div>
+      <p>
+        Нейро-команда — это <strong>не расход, а инвестиция</strong> в рост без потолка.
+        Вы платите один раз и получаете сотрудника, который никогда не устаёт,
+        не болеет и не уходит в отпуск.<br><br>
+        В то время как конкуренты тратят часы на переписки,
+        <strong>ваш бизнес растёт автоматически</strong> — привлекая партнёров,
+        обучая команду и обрабатывая заявки круглосуточно.
+        Это конкурентное преимущество, которое работает, <strong>пока вы спите</strong>.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ CTA ══ -->
+<section class="cta-section">
+  <div class="section-inner">
+    <div class="section-tag">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="#b700ff"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+      Начать сейчас
+    </div>
+    <h2 class="section-title">Готовы делегировать<br><em>рост вашего бизнеса?</em></h2>
+    <p class="section-sub">
+      Нажмите кнопку — и мы покажем, как именно Нейро-команда
+      встроится в ваш бизнес уже сегодня
+    </p>
+
+    <a href="https://t.me/energia_uspeha" target="_blank" rel="noopener noreferrer" class="btn-cta">
+      <svg viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+      <span>ХОЧУ</span>
+    </a>
+
+    <a href="https://t.me/energia_uspeha" target="_blank" rel="noopener noreferrer" class="cta-link">
+      t.me/energia_uspeha
+    </a>
+  </div>
+</section>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <p>© 2025 · Нейро-помощники для МЛМ · Эвелина Врублевская · ИИ · МЛМ · Обучение</p>
+</footer>
+
+<script>
+/* Particles */
+const pc=document.getElementById('pts');
+const cl=['rgba(183,0,255,.7)','rgba(255,0,255,.5)','rgba(168,85,247,.6)','rgba(232,121,249,.45)'];
+for(let i=0;i<45;i++){
+  const e=document.createElement('div');e.className='pt';
+  const s=Math.random()*4+1.5;
+  e.style.cssText=`width:${s}px;height:${s}px;left:${Math.random()*100}%;`+
+    `background:${cl[Math.floor(Math.random()*cl.length)]};`+
+    `animation-duration:${Math.random()*14+8}s;`+
+    `animation-delay:${Math.random()*14}s;`+
+    `box-shadow:0 0 ${s*2.5}px ${cl[Math.floor(Math.random()*cl.length)]};`;
+  pc.appendChild(e);
+}
+
+/* Dropdown */
+const dd=document.getElementById('navDropdown');
+const btn=document.getElementById('dropToggle');
+btn.addEventListener('click',e=>{
+  e.stopPropagation();
+  const open=dd.classList.toggle('open');
+  btn.setAttribute('aria-expanded',open);
+});
+document.addEventListener('click',e=>{
+  if(!dd.contains(e.target)){
+    dd.classList.remove('open');
+    btn.setAttribute('aria-expanded','false');
+  }
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){dd.classList.remove('open');btn.setAttribute('aria-expanded','false');}
+});
+
+/* Scroll animations */
+const observer=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting) e.target.classList.add('visible');
+  });
+},{threshold:.12});
+document.querySelectorAll('.card,.fw-card').forEach(el=>observer.observe(el));
+</script>
+</body>
+</html>
